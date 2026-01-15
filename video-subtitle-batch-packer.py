@@ -365,20 +365,32 @@ class VideoSubtitlePacker:
         # 按集数数字正序排序
         sorted_nums = sorted(video_dict.keys(), key=lambda x: int(x))
         self.write_log(f"\n===== 匹配视频-字幕（正序） =====")
+        # 在init_task_queue函数的“匹配视频和字幕”部分，替换输出文件名的生成逻辑
         for num in sorted_nums:
             if num in sub_dict:
                 video_path = video_dict[num]
                 sub_path = sub_dict[num]
-                # 清理输出文件名中的#标记
+                # 核心修改：处理MP4格式的输出
                 original_filename = os.path.basename(video_path)
+                # 1. 清理文件名中的#标记
                 cleaned_filename = self.clean_filename(original_filename)
-                output_file = os.path.join(output_folder, cleaned_filename)
+                # 2. 拆分文件名和后缀
+                name_part, ext_part = os.path.splitext(cleaned_filename)
+                # 3. 若原后缀是.mp4/.MP4，强制改为.mkv（兼容字幕）
+                if ext_part.lower() == ".mp4":
+                    final_output_filename = f"{name_part}.mkv"
+                    self.write_log(f"提示：原视频是MP4格式，自动转为MKV容器（兼容字幕）→ {final_output_filename}")
+                else:
+                    final_output_filename = cleaned_filename
+                # 4. 生成输出路径
+                output_file = os.path.join(output_folder, final_output_filename)
+                # 添加任务到队列
                 self.task_queue.append((
                     num, video_path, sub_path, output_file,
                     final_ffmpeg_path, self.default_sub_var.get(), selected_encoding
                 ))
                 success_match += 1
-                self.write_log(f"匹配成功：集数{num} → 原始名{original_filename} → 输出名{cleaned_filename}")
+                self.write_log(f"匹配成功：集数{num} → 原始名{original_filename} → 输出名{final_output_filename}")
             else:
                 self.write_log(f"匹配失败：集数{num} 无对应字幕")
 
