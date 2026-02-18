@@ -212,6 +212,7 @@ class VideoSubtitlePacker:
         # 新增：设置默认字幕
         if self.set_default_subtitle.get():
             # 先清除所有字幕轨的默认标记，再设置新字幕为默认
+            # 这确保只有新添加的字幕是默认字幕，避免多个默认字幕造成播放器行为不一致
             cmd.extend(["-disposition:s", "-default"])
             cmd.extend([f"-disposition:s:{existing_subs_count}", "default"])
 
