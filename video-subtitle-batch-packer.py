@@ -19,6 +19,8 @@ class VideoSubtitlePacker:
         self.encoding = tk.StringVar(value="UTF-8")
         # 新增：字幕语言变量，默认简中
         self.subtitle_language = tk.StringVar(value="简中")
+        # 新增：默认字幕选项
+        self.set_default_subtitle = tk.BooleanVar(value=False)
 
         # 构建GUI
         self._build_gui()
@@ -64,6 +66,9 @@ class VideoSubtitlePacker:
         ttk.Label(option_frame, text="字幕轨道语言：").grid(row=0, column=2, padx=5, pady=5, sticky="w")
         lang_options = ["简中", "繁中", "英文"]
         ttk.Combobox(option_frame, textvariable=self.subtitle_language, values=lang_options, state="readonly").grid(row=0, column=3, padx=5, pady=5)
+
+        # 新增：是否设为默认字幕
+        ttk.Checkbutton(option_frame, text="是否设为默认字幕", variable=self.set_default_subtitle).grid(row=1, column=0, columnspan=2, padx=5, pady=5, sticky="w")
 
         # 4. 操作按钮
         btn_frame = ttk.Frame(self.root)
@@ -203,6 +208,13 @@ class VideoSubtitlePacker:
         lang_code = lang_map.get(self.subtitle_language.get(), "chi-sim")
         # 只给新增的外部字幕轨道设置语言，不覆盖原视频已有字幕语言
         cmd.extend([f"-metadata:s:s:{existing_subs_count}", f"language={lang_code}"])
+
+        # 新增：设置默认字幕
+        if self.set_default_subtitle.get():
+            # 先清除所有字幕轨的默认标记，再设置新字幕为默认
+            # 这确保只有新添加的字幕是默认字幕，避免多个默认字幕造成播放器行为不一致
+            cmd.extend(["-disposition:s", "-default"])
+            cmd.extend([f"-disposition:s:{existing_subs_count}", "default"])
 
         # 编码格式
         cmd.extend(["-sub_charenc", self.encoding.get()])
