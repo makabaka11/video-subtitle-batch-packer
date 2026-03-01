@@ -17,9 +17,9 @@ class VideoSubtitlePacker:
         self.subtitle_folder = tk.StringVar()
         self.output_folder = tk.StringVar()
         self.encoding = tk.StringVar(value="UTF-8")
-        # 新增：字幕语言变量，默认简中
+        # 字幕语言变量，默认简中
         self.subtitle_language = tk.StringVar(value="简中")
-        # 新增：默认字幕选项
+        # 默认字幕选项
         self.set_default_subtitle = tk.BooleanVar(value=False)
 
         # 构建GUI
@@ -27,7 +27,7 @@ class VideoSubtitlePacker:
 
     def _build_gui(self):
         # 1. FFmpeg路径配置
-        ffmpeg_frame = ttk.LabelFrame(self.root, text="FFmpeg 配置")
+        ffmpeg_frame = ttk.LabelFrame(self.root, text="FFmpeg 配置(已配置环境变量可留空)")
         ffmpeg_frame.pack(fill="x", padx=10, pady=5)
 
         ttk.Label(ffmpeg_frame, text="FFmpeg路径：").grid(row=0, column=0, padx=5, pady=5, sticky="w")
@@ -62,12 +62,12 @@ class VideoSubtitlePacker:
         encoding_options = ["UTF-8", "gbk", "cp936", "gb2312"]
         ttk.Combobox(option_frame, textvariable=self.encoding, values=encoding_options, state="readonly").grid(row=0, column=1, padx=5, pady=5)
 
-        # 新增：字幕语言选择
+        # 字幕语言选择
         ttk.Label(option_frame, text="字幕轨道语言：").grid(row=0, column=2, padx=5, pady=5, sticky="w")
         lang_options = ["简中", "繁中", "英文"]
         ttk.Combobox(option_frame, textvariable=self.subtitle_language, values=lang_options, state="readonly").grid(row=0, column=3, padx=5, pady=5)
 
-        # 新增：是否设为默认字幕
+        # 是否设为默认字幕
         ttk.Checkbutton(option_frame, text="是否设为默认字幕", variable=self.set_default_subtitle).grid(row=1, column=0, columnspan=2, padx=5, pady=5, sticky="w")
 
         # 4. 操作按钮
@@ -199,7 +199,7 @@ class VideoSubtitlePacker:
             "-map", "1:s:0",
         ]
 
-        # 新增：添加字幕轨道语言元数据
+        # 添加字幕轨道语言元数据
         lang_map = {
             "简中": "chi-sim",
             "繁中": "chi-tra",
@@ -209,7 +209,7 @@ class VideoSubtitlePacker:
         # 只给新增的外部字幕轨道设置语言，不覆盖原视频已有字幕语言
         cmd.extend([f"-metadata:s:s:{existing_subs_count}", f"language={lang_code}"])
 
-        # 新增：设置默认字幕
+        # 设置默认字幕
         if self.set_default_subtitle.get():
             # 先清除所有字幕轨的默认标记，再设置新字幕为默认
             # 这确保只有新添加的字幕是默认字幕，避免多个默认字幕造成播放器行为不一致
@@ -236,6 +236,32 @@ class VideoSubtitlePacker:
         subtitle_files = [f for f in os.listdir(self.subtitle_folder.get()) if f.lower().endswith(("ass", "srt"))]
         if not video_files or not subtitle_files:
             self._log("错误：视频文件夹或字幕文件夹中无有效文件！")
+            return
+
+        # 单文件场景：跳过集数解析，直接封装
+        if len(video_files) == 1 and len(subtitle_files) == 1:
+            video_path = os.path.join(self.video_folder.get(), video_files[0])
+            subtitle_path = os.path.join(self.subtitle_folder.get(), subtitle_files[0])
+            output_filename = os.path.basename(video_path)
+            output_path = os.path.join(self.output_folder.get(), output_filename)
+            existing_subs = self._count_subtitle_streams(video_path)
+
+            self._log("检测到单个视频与单个字幕，直接封装...")
+            try:
+                cmd = self._build_ffmpeg_cmd(video_path, subtitle_path, output_path, existing_subs)
+                result = subprocess.run(
+                    cmd,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    encoding=self.encoding.get(),
+                    timeout=300
+                )
+                if result.returncode != 0:
+                    self._log(f"封装失败：{result.stderr}")
+                else:
+                    self._log(f"封装成功：{output_path}")
+            except Exception as e:
+                self._log(f"封装异常：{str(e)}")
             return
 
         # 解析集数规则
