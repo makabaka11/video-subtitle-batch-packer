@@ -52,9 +52,6 @@ jobs:
           --self-contained false
           --no-restore
           -p:Platform=x64
-          -p:PublishSingleFile=true
-          -p:IncludeAllContentForSelfExtract=true
-          -p:EnableCompressionInSingleFile=true
           -p:ContinuousIntegrationBuild=true
           --output "${{ github.workspace }}\artifacts\WinUIBatchPacker-win-x64"
 
@@ -65,13 +62,11 @@ jobs:
             throw "Expected executable was not generated: $exe"
           }
           $files = @(Get-ChildItem "${{ github.workspace }}\artifacts\WinUIBatchPacker-win-x64" -File -Recurse)
-          if ($files.Count -ne 1 -or $files[0].Extension -ne ".exe") {
-            throw "Single-file publish expected exactly one EXE, got $($files.Count) files"
+          $size = ($files | Measure-Object Length -Sum).Sum
+          if ($size -gt 45MB) {
+            throw "Framework-dependent artifact is unexpectedly large: $size bytes"
           }
-          if ($files[0].Length -gt 50MB) {
-            throw "Framework-dependent EXE is unexpectedly large: $($files[0].Length) bytes"
-          }
-          Write-Host "Framework-dependent single EXE size: $($files[0].Length) bytes"
+          Write-Host "Framework-dependent publish size: $size bytes ($($files.Count) files)"
           Get-ChildItem "${{ github.workspace }}\artifacts\WinUIBatchPacker-win-x64" |
             Select-Object Name, Length
 
