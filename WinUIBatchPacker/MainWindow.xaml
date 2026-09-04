@@ -6,22 +6,22 @@
       <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
         <StackPanel Spacing="14" Padding="0,0,6,0">
           <StackPanel Margin="4,2,0,4"><TextBlock Text="视频字幕批量封装" FontSize="30" FontWeight="SemiBold"/><TextBlock Text="自动识别 · 灵活配对 · 无损封装" FontSize="14" Opacity="0.62" Margin="0,5,0,0"/></StackPanel>
-          <Border Style="{StaticResource CardBorderStyle}"><StackPanel Spacing="10">
+          <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="12" Padding="18"><StackPanel Spacing="10">
             <TextBlock Text="FFmpeg" FontSize="18" FontWeight="SemiBold"/><TextBlock Text="已加入系统 PATH 时可以留空" Opacity="0.62"/>
             <Grid ColumnSpacing="8"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBox x:Name="FfmpegBox" PlaceholderText="ffmpeg.exe 路径"/><Button Grid.Column="1" Content="选择文件" Click="PickFfmpeg_Click"/></Grid>
           </StackPanel></Border>
-          <Border Style="{StaticResource CardBorderStyle}"><StackPanel Spacing="12">
+          <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="12" Padding="18"><StackPanel Spacing="12">
             <TextBlock Text="文件位置" FontSize="18" FontWeight="SemiBold"/><CheckBox x:Name="SameFolderCheck" Content="视频和字幕位于同一个文件夹" Checked="FolderModeChanged" Unchecked="FolderModeChanged"/>
             <Grid x:Name="SeparateFoldersPanel" RowSpacing="10" ColumnSpacing="8"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBox x:Name="VideoFolderBox" Header="视频文件夹" TextChanged="FolderTextChanged"/><Button Grid.Column="1" Content="浏览" Margin="0,25,0,0" Click="PickVideoFolder_Click"/><TextBox x:Name="SubtitleFolderBox" Grid.Row="1" Header="字幕文件夹" TextChanged="FolderTextChanged"/><Button Grid.Row="1" Grid.Column="1" Content="浏览" Margin="0,25,0,0" Click="PickSubtitleFolder_Click"/></Grid>
             <Grid x:Name="InputFolderPanel" Visibility="Collapsed" ColumnSpacing="8"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBox x:Name="InputFolderBox" Header="输入文件夹" TextChanged="FolderTextChanged"/><Button Grid.Column="1" Content="浏览" Margin="0,25,0,0" Click="PickInputFolder_Click"/></Grid>
             <CheckBox x:Name="ReplaceCheck" Content="封装成功后安全替换原视频" Checked="ReplaceModeChanged" Unchecked="ReplaceModeChanged"/>
             <Grid x:Name="OutputFolderPanel" ColumnSpacing="8"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBox x:Name="OutputFolderBox" Header="输出文件夹"/><Button Grid.Column="1" Content="浏览" Margin="0,25,0,0" Click="PickOutputFolder_Click"/></Grid>
           </StackPanel></Border>
-          <Border Style="{StaticResource CardBorderStyle}"><StackPanel Spacing="12">
+          <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="12" Padding="18"><StackPanel Spacing="12">
             <TextBlock Text="字幕选项" FontSize="18" FontWeight="SemiBold"/><Grid ColumnSpacing="12"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions><ComboBox x:Name="EncodingBox" Header="文件编码" SelectedIndex="0" HorizontalAlignment="Stretch"><ComboBoxItem Content="UTF-8"/><ComboBoxItem Content="gbk"/><ComboBoxItem Content="cp936"/><ComboBoxItem Content="gb2312"/><ComboBoxItem Content="big5"/></ComboBox><ComboBox x:Name="LanguageBox" Grid.Column="1" Header="未知后缀语言" SelectedIndex="0" HorizontalAlignment="Stretch"><ComboBoxItem Content="简体中文"/><ComboBoxItem Content="繁体中文"/><ComboBoxItem Content="英语"/></ComboBox></Grid>
             <CheckBox x:Name="DefaultSubtitleCheck" Content="将新增的第一条字幕设为默认轨道"/>
           </StackPanel></Border>
-          <Border Style="{StaticResource CardBorderStyle}"><StackPanel Spacing="10">
+          <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="12" Padding="18"><StackPanel Spacing="10">
             <Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock Text="执行日志" FontSize="18" FontWeight="SemiBold"/><Button Grid.Column="1" Content="清空" Click="ClearLog_Click"/></Grid><ProgressBar x:Name="Progress" Minimum="0" Maximum="1" Height="4"/><TextBox x:Name="LogBox" Height="190" AcceptsReturn="True" IsReadOnly="True" TextWrapping="Wrap" FontFamily="Consolas" ScrollViewer.VerticalScrollBarVisibility="Auto"/><Button Content="开始批量封装" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Padding="18,10" Style="{StaticResource AccentButtonStyle}" Click="StartPack_Click"/>
           </StackPanel></Border>
         </StackPanel>
