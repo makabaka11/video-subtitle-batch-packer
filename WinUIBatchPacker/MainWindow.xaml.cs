@@ -12,6 +12,12 @@ public sealed partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        VideoList.HeaderText = "视频文件";
+        SubtitleList.HeaderText = "字幕组";
+        VideoList.SelectionChangedByCheck += ListCheckChanged;
+        SubtitleList.SelectionChangedByCheck += ListCheckChanged;
+        VideoList.Reordered += ListReordered;
+        SubtitleList.Reordered += ListReordered;
         AppWindow.Resize(new Windows.Graphics.SizeInt32(1720, 900));
     }
 
