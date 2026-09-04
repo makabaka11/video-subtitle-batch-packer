@@ -49,7 +49,7 @@ jobs:
           dotnet publish WinUIBatchPacker.csproj
           --configuration Release
           --runtime win-x64
-          --self-contained true
+          --self-contained false
           --no-restore
           -p:Platform=x64
           -p:PublishSingleFile=true
@@ -68,7 +68,10 @@ jobs:
           if ($files.Count -ne 1 -or $files[0].Extension -ne ".exe") {
             throw "Single-file publish expected exactly one EXE, got $($files.Count) files"
           }
-          Write-Host "Single EXE size: $($files[0].Length) bytes"
+          if ($files[0].Length -gt 50MB) {
+            throw "Framework-dependent EXE is unexpectedly large: $($files[0].Length) bytes"
+          }
+          Write-Host "Framework-dependent single EXE size: $($files[0].Length) bytes"
           Get-ChildItem "${{ github.workspace }}\artifacts\WinUIBatchPacker-win-x64" |
             Select-Object Name, Length
 
