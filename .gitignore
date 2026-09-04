@@ -1,8 +1,14 @@
-# Python cache
+# .NET / WinUI generated files
+WinUIBatchPacker/bin/
+WinUIBatchPacker/obj/
+WinUIBatchPacker/release/
+artifacts/
+
+# Python cache and build output
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
+*.py[cod]
+build/
+dist/
 
 # IDE
 .vscode/

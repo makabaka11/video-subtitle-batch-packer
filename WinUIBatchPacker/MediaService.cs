@@ -1,0 +1,140 @@
+using System.Diagnostics;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.RegularExpressions;
+
+namespace WinUIBatchPacker;
+
+public static partial class MediaService
+{
+    public static readonly string[] VideoExtensions = [".mkv", ".mp4", ".mov", ".avi", ".m4v", ".webm"];
+    public static readonly string[] SubtitleExtensions = [".ass", ".ssa", ".srt", ".vtt"];
+
+    private static readonly (int Score, Regex Pattern)[] Patterns =
+    [
+        (100, new(@"(?:^|[^A-Z0-9])S\d{1,2}[ ._-]*E(?:P)?[ ._-]*([0-9]{1,3}(?:v\d+)?)", RegexOptions.IgnoreCase)),
+        (98, new(@"(?:^|[^A-Z0-9])(?:EP?|Episode|第)[ ._-]*([0-9]{1,3}(?:v\d+)?)(?:集|话|話)?(?:[^A-Z0-9]|$)", RegexOptions.IgnoreCase)),
+        (96, new(@"#\s*([0-9]{1,3}(?:v\d+)?)\s*#", RegexOptions.IgnoreCase)),
+        (94, new(@"(?:^|[\[ (._-])((?:OVA|OAD|SP|SPECIAL|NCOP|NCED)\d*)(?=$|[\] )._-])", RegexOptions.IgnoreCase)),
+        (85, new(@"[\[(【]\s*([0-9]{1,3}(?:v\d+)?)\s*[\])】]", RegexOptions.IgnoreCase)),
+        (65, new(@"(?<![A-Za-z0-9])([0-9]{1,3}(?:v\d+)?)(?![A-Za-z0-9])", RegexOptions.IgnoreCase))
+    ];
+
+    public static string ExtractEpisode(string path)
+    {
+        var stem = Path.GetFileNameWithoutExtension(path);
+        var candidates = new List<(int Score, string Episode)>();
+        foreach (var (score, pattern) in Patterns)
+        foreach (Match match in pattern.Matches(stem))
+        {
+            var raw = match.Groups[1].Value;
+            var digits = Regex.Match(raw, @"^\d+");
+            if (digits.Success)
+            {
+                var number = int.Parse(digits.Value);
+                if (number >= 100 || number is >= 1900 and <= 2099) continue;
+                if (score < 80)
+                {
+                    var start = Math.Max(0, match.Index - 12);
+                    var around = stem.Substring(start, Math.Min(stem.Length - start, match.Length + 24));
+                    if (Regex.IsMatch(around, $@"(?:x|h\.?|hi)?{number}(?:p|i|bit|kbps)|(?:x|h)26[45]", RegexOptions.IgnoreCase)) continue;
+                }
+            }
+            candidates.Add((score, NormalizeEpisode(raw)));
+        }
+        return candidates.OrderByDescending(x => x.Score).Select(x => x.Episode).FirstOrDefault() ?? "";
+    }
+
+    private static string NormalizeEpisode(string value)
+    {
+        value = value.Trim().ToUpperInvariant();
+        var numeric = Regex.Match(value, @"^0*(\d+)(?:V(\d+))?$");
+        if (numeric.Success)
+            return int.Parse(numeric.Groups[1].Value) + (numeric.Groups[2].Success ? $"V{int.Parse(numeric.Groups[2].Value)}" : "");
+        var special = Regex.Match(value, @"^(OVA|OAD|SP|SPECIAL|NCOP|NCED)0*(\d*)$");
+        if (!special.Success) return value;
+        var kind = special.Groups[1].Value == "SPECIAL" ? "SP" : special.Groups[1].Value;
+        return kind + (special.Groups[2].Value.Length > 0 ? int.Parse(special.Groups[2].Value) : "");
+    }
+
+    public static (int Group, int Kind, int Number, string Text) EpisodeSortKey(string episode)
+    {
+        var number = Regex.Match(episode, @"^(\d+)");
+        if (number.Success) return (0, 0, int.Parse(number.Value), episode);
+        var special = Regex.Match(episode, @"^(SP|OVA|OAD|NCOP|NCED)(\d*)$", RegexOptions.IgnoreCase);
+        if (!special.Success) return (2, 0, 0, episode);
+        string[] order = ["SP", "OVA", "OAD", "NCOP", "NCED"];
+        return (1, Array.IndexOf(order, special.Groups[1].Value.ToUpperInvariant()),
+            special.Groups[2].Value.Length > 0 ? int.Parse(special.Groups[2].Value) : 0, episode);
+    }
+
+    public static List<MediaRow> LoadVideos(string folder) => Directory.Exists(folder)
+        ? Directory.EnumerateFiles(folder).Where(p => VideoExtensions.Contains(Path.GetExtension(p).ToLowerInvariant()))
+            .Select(p => new MediaRow { DisplayName = Path.GetFileName(p), Paths = [p], Episode = ExtractEpisode(p) })
+            .OrderBy(x => EpisodeSortKey(x.Episode)).ToList() : [];
+
+    public static List<MediaRow> LoadSubtitleGroups(string folder) => Directory.Exists(folder)
+        ? Directory.EnumerateFiles(folder).Where(p => SubtitleExtensions.Contains(Path.GetExtension(p).ToLowerInvariant()))
+            .GroupBy(p => { var ep = ExtractEpisode(p); return ep.Length > 0 ? ep : $"?{p}"; })
+            .Select(g => new MediaRow { DisplayName = string.Join("  +  ", g.Select(Path.GetFileName)), Paths = g.ToList(), Episode = g.Key.StartsWith('?') ? "" : g.Key })
+            .OrderBy(x => EpisodeSortKey(x.Episode)).ToList() : [];
+
+    public static IReadOnlyList<string> Deduplicate(IReadOnlyList<string> paths)
+    {
+        var seen = new HashSet<string>(); var result = new List<string>();
+        foreach (var path in paths)
+        {
+            using var stream = File.OpenRead(path);
+            var key = stream.Length + ":" + Convert.ToHexString(SHA256.HashData(stream));
+            if (seen.Add(key)) result.Add(path);
+        }
+        return result;
+    }
+
+    public static (string Code, string Title) SubtitleLanguage(string path, string fallback)
+    {
+        var tokens = Regex.Split(Path.GetFileNameWithoutExtension(path).ToLowerInvariant(), @"[^a-z0-9]+");
+        if (tokens.Any(x => new[] { "sc", "chs", "zhcn", "zhs", "gb", "simp", "simplified" }.Contains(x))) return ("chi", "简体中文");
+        if (tokens.Any(x => new[] { "tc", "cht", "zhtw", "zht", "big5", "trad", "traditional" }.Contains(x))) return ("chi", "繁体中文");
+        if (tokens.Any(x => new[] { "en", "eng", "english" }.Contains(x))) return ("eng", "English");
+        return fallback == "英语" ? ("eng", "English") : ("chi", fallback);
+    }
+
+    public static async Task<int> CountSubtitleStreams(string video, string ffprobe)
+    {
+        var result = await Run(ffprobe, ["-v", "error", "-select_streams", "s", "-show_entries", "stream=index", "-of", "csv=p=0", video]);
+        return result.Code == 0 ? result.Output.Split('\n', StringSplitOptions.RemoveEmptyEntries).Length : 0;
+    }
+
+    public static async Task<(int Code, string Output)> Pack(string video, IReadOnlyList<string> subtitles,
+        string target, PackOptions options)
+    {
+        var ffmpeg = string.IsNullOrWhiteSpace(options.Ffmpeg) ? "ffmpeg" : options.Ffmpeg;
+        var ffprobe = Path.GetFileName(ffmpeg).Equals("ffmpeg.exe", StringComparison.OrdinalIgnoreCase)
+            ? Path.Combine(Path.GetDirectoryName(ffmpeg)!, "ffprobe.exe") : "ffprobe";
+        var existing = await CountSubtitleStreams(video, ffprobe);
+        var args = new List<string> { "-i", video };
+        foreach (var subtitle in subtitles) { args.AddRange(["-sub_charenc", options.Encoding, "-i", subtitle]); }
+        args.AddRange(["-map", "0"]);
+        for (var i = 0; i < subtitles.Count; i++) args.AddRange(["-map", $"{i + 1}:0"]);
+        args.AddRange(["-map_metadata", "0", "-map_chapters", "0", "-c", "copy"]);
+        for (var i = 0; i < subtitles.Count; i++)
+        {
+            var (code, title) = SubtitleLanguage(subtitles[i], options.FallbackLanguage);
+            args.AddRange([$"-metadata:s:s:{existing + i}", $"language={code}", $"-metadata:s:s:{existing + i}", $"title={title}"]);
+        }
+        if (options.DefaultSubtitle && subtitles.Count > 0) args.AddRange(["-disposition:s", "0", $"-disposition:s:{existing}", "default"]);
+        args.AddRange(["-y", target]);
+        return await Run(ffmpeg, args);
+    }
+
+    private static async Task<(int Code, string Output)> Run(string file, IEnumerable<string> args)
+    {
+        var start = new ProcessStartInfo(file) { UseShellExecute = false, RedirectStandardError = true, RedirectStandardOutput = true, StandardErrorEncoding = Encoding.UTF8, StandardOutputEncoding = Encoding.UTF8 };
+        foreach (var arg in args) start.ArgumentList.Add(arg);
+        using var process = Process.Start(start) ?? throw new InvalidOperationException($"无法启动 {file}");
+        var stdout = process.StandardOutput.ReadToEndAsync(); var stderr = process.StandardError.ReadToEndAsync();
+        await process.WaitForExitAsync();
+        return (process.ExitCode, (await stdout) + (await stderr));
+    }
+}
