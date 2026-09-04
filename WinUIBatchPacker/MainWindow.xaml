@@ -28,7 +28,7 @@
       </ScrollViewer>
       <Grid Grid.Column="1" RowSpacing="12"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
         <StackPanel><TextBlock Text="匹配方案" FontSize="24" FontWeight="SemiBold"/><TextBlock Text="勾选后的序号一一对应；拖动条目可调整顺序" Opacity="0.62" Margin="0,4,0,0"/></StackPanel>
-        <Grid Grid.Row="1" ColumnSpacing="12"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions><local:MediaListView x:Name="VideoList"/><local:MediaListView x:Name="SubtitleList" Grid.Column="1"/></Grid>
+        <Grid x:Name="ListsHost" Grid.Row="1" ColumnSpacing="12"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions></Grid>
         <InfoBar x:Name="MatchInfo" Grid.Row="2" IsOpen="True" IsClosable="False" Severity="Informational" Message="请选择输入路径"/>
       </Grid>
     </Grid>

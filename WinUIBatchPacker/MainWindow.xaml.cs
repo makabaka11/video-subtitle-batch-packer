@@ -8,10 +8,17 @@ namespace WinUIBatchPacker;
 public sealed partial class MainWindow : Window
 {
     private bool _refreshing;
+    private readonly MediaListView VideoList;
+    private readonly MediaListView SubtitleList;
 
     public MainWindow()
     {
         InitializeComponent();
+        VideoList = new MediaListView();
+        SubtitleList = new MediaListView();
+        Grid.SetColumn(SubtitleList, 1);
+        ListsHost.Children.Add(VideoList);
+        ListsHost.Children.Add(SubtitleList);
         VideoList.HeaderText = "视频文件";
         SubtitleList.HeaderText = "字幕组";
         VideoList.SelectionChangedByCheck += ListCheckChanged;
