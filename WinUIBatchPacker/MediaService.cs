@@ -37,7 +37,7 @@ public static partial class MediaService
                 {
                     var start = Math.Max(0, match.Index - 12);
                     var around = stem.Substring(start, Math.Min(stem.Length - start, match.Length + 24));
-                    if (Regex.IsMatch(around, $@"(?:x|h\.?|hi)?{number}(?:p|i|bit|kbps)|(?:x|h)26[45]", RegexOptions.IgnoreCase)) continue;
+                    if (Regex.IsMatch(around, $@"(?:x|h\.?)?{number}(?:p|i|bit|kbps)|(?:x|h)26[45]", RegexOptions.IgnoreCase)) continue;
                 }
             }
             candidates.Add((score, NormalizeEpisode(raw)));
@@ -49,8 +49,7 @@ public static partial class MediaService
     {
         value = value.Trim().ToUpperInvariant();
         var numeric = Regex.Match(value, @"^0*(\d+)(?:V(\d+))?$");
-        if (numeric.Success)
-            return int.Parse(numeric.Groups[1].Value) + (numeric.Groups[2].Success ? $"V{int.Parse(numeric.Groups[2].Value)}" : "");
+        if (numeric.Success) return int.Parse(numeric.Groups[1].Value) + (numeric.Groups[2].Success ? $"V{int.Parse(numeric.Groups[2].Value)}" : "");
         var special = Regex.Match(value, @"^(OVA|OAD|SP|SPECIAL|NCOP|NCED)0*(\d*)$");
         if (!special.Success) return value;
         var kind = special.Groups[1].Value == "SPECIAL" ? "SP" : special.Groups[1].Value;
@@ -64,8 +63,7 @@ public static partial class MediaService
         var special = Regex.Match(episode, @"^(SP|OVA|OAD|NCOP|NCED)(\d*)$", RegexOptions.IgnoreCase);
         if (!special.Success) return (2, 0, 0, episode);
         string[] order = ["SP", "OVA", "OAD", "NCOP", "NCED"];
-        return (1, Array.IndexOf(order, special.Groups[1].Value.ToUpperInvariant()),
-            special.Groups[2].Value.Length > 0 ? int.Parse(special.Groups[2].Value) : 0, episode);
+        return (1, Array.IndexOf(order, special.Groups[1].Value.ToUpperInvariant()), special.Groups[2].Value.Length > 0 ? int.Parse(special.Groups[2].Value) : 0, episode);
     }
 
     public static List<MediaRow> LoadVideos(string folder) => Directory.Exists(folder)
@@ -106,15 +104,13 @@ public static partial class MediaService
         return result.Code == 0 ? result.Output.Split('\n', StringSplitOptions.RemoveEmptyEntries).Length : 0;
     }
 
-    public static async Task<(int Code, string Output)> Pack(string video, IReadOnlyList<string> subtitles,
-        string target, PackOptions options)
+    public static async Task<(int Code, string Output)> Pack(string video, IReadOnlyList<string> subtitles, string target, PackOptions options)
     {
         var ffmpeg = string.IsNullOrWhiteSpace(options.Ffmpeg) ? "ffmpeg" : options.Ffmpeg;
-        var ffprobe = Path.GetFileName(ffmpeg).Equals("ffmpeg.exe", StringComparison.OrdinalIgnoreCase)
-            ? Path.Combine(Path.GetDirectoryName(ffmpeg)!, "ffprobe.exe") : "ffprobe";
+        var ffprobe = Path.GetFileName(ffmpeg).Equals("ffmpeg.exe", StringComparison.OrdinalIgnoreCase) ? Path.Combine(Path.GetDirectoryName(ffmpeg)!, "ffprobe.exe") : "ffprobe";
         var existing = await CountSubtitleStreams(video, ffprobe);
         var args = new List<string> { "-i", video };
-        foreach (var subtitle in subtitles) { args.AddRange(["-sub_charenc", options.Encoding, "-i", subtitle]); }
+        foreach (var subtitle in subtitles) args.AddRange(["-sub_charenc", options.Encoding, "-i", subtitle]);
         args.AddRange(["-map", "0"]);
         for (var i = 0; i < subtitles.Count; i++) args.AddRange(["-map", $"{i + 1}:0"]);
         args.AddRange(["-map_metadata", "0", "-map_chapters", "0", "-c", "copy"]);

@@ -1,4 +1,3 @@
-using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Storage.Pickers;
@@ -9,10 +8,11 @@ namespace WinUIBatchPacker;
 public sealed partial class MainWindow : Window
 {
     private bool _refreshing;
+
     public MainWindow()
     {
         InitializeComponent();
-        AppWindow.Resize(new Windows.Graphics.SizeInt32(1720, 800));
+        AppWindow.Resize(new Windows.Graphics.SizeInt32(1720, 900));
     }
 
     private IntPtr Hwnd => WindowNative.GetWindowHandle(this);
@@ -56,9 +56,9 @@ public sealed partial class MainWindow : Window
     private void ListReordered(object? s, EventArgs e) => UpdateMatchInfo();
     private void UpdateMatchInfo()
     {
-        var v = VideoList.SelectedRows().Count; var s = SubtitleList.SelectedRows().Count; var ok = v > 0 && v == s;
-        MatchInfo.Severity = ok ? InfoBarSeverity.Success : InfoBarSeverity.Warning;
-        MatchInfo.Message = ok ? $"当前将按序号处理 {v} 对" : $"已选视频 {v} 个，字幕组 {s} 个；数量必须相等";
+        var videos = VideoList.SelectedRows().Count; var subtitles = SubtitleList.SelectedRows().Count; var matched = videos > 0 && videos == subtitles;
+        MatchInfo.Severity = matched ? InfoBarSeverity.Success : InfoBarSeverity.Warning;
+        MatchInfo.Message = matched ? $"当前将按序号处理 {videos} 对" : $"已选视频 {videos} 个，字幕组 {subtitles} 个；数量必须相等";
     }
     private async void StartPack_Click(object sender, RoutedEventArgs e)
     {
@@ -74,7 +74,7 @@ public sealed partial class MainWindow : Window
         for (var i = 0; i < videos.Count; i++)
         {
             var video = videos[i].Paths[0]; var subs = MediaService.Deduplicate(subtitles[i].Paths);
-            string target = replace ? Path.Combine(Path.GetDirectoryName(video)!, $".__muxing_{Guid.NewGuid():N}{Path.GetExtension(video)}") : Path.Combine(output, Path.GetFileName(video));
+            var target = replace ? Path.Combine(Path.GetDirectoryName(video)!, $".__muxing_{Guid.NewGuid():N}{Path.GetExtension(video)}") : Path.Combine(output, Path.GetFileName(video));
             if (!replace && Path.GetFullPath(target).Equals(Path.GetFullPath(video), StringComparison.OrdinalIgnoreCase)) { AppendLog($"#{i + 1} 跳过：输出与原视频路径相同。"); continue; }
             AppendLog($"#{i + 1} {Path.GetFileName(video)}：加入 {subs.Count} 条字幕");
             try
@@ -88,6 +88,6 @@ public sealed partial class MainWindow : Window
         }
         AppendLog("全部任务执行完毕。");
     }
-    private void AppendLog(string text) { LogBox.Text += $"[{DateTime.Now:HH:mm:ss}] {text}\r\n"; }
+    private void AppendLog(string text) => LogBox.Text += $"[{DateTime.Now:HH:mm:ss}] {text}\r\n";
     private void ClearLog_Click(object sender, RoutedEventArgs e) => LogBox.Text = "";
 }

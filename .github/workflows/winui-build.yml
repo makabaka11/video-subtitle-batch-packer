@@ -49,9 +49,12 @@ jobs:
           dotnet publish WinUIBatchPacker.csproj
           --configuration Release
           --runtime win-x64
-          --self-contained false
+          --self-contained true
           --no-restore
           -p:Platform=x64
+          -p:PublishSingleFile=true
+          -p:IncludeAllContentForSelfExtract=true
+          -p:EnableCompressionInSingleFile=true
           -p:ContinuousIntegrationBuild=true
           --output "${{ github.workspace }}\artifacts\WinUIBatchPacker-win-x64"
 
@@ -61,10 +64,11 @@ jobs:
           if (-not (Test-Path -LiteralPath $exe)) {
             throw "Expected executable was not generated: $exe"
           }
-          $size = (Get-ChildItem "${{ github.workspace }}\artifacts\WinUIBatchPacker-win-x64" -File -Recurse |
-            Measure-Object Length -Sum).Sum
-          Write-Host "Compact publish size: $size bytes"
-          if ($size -gt 45MB) { throw "Compact artifact is unexpectedly large: $size bytes" }
+          $files = @(Get-ChildItem "${{ github.workspace }}\artifacts\WinUIBatchPacker-win-x64" -File -Recurse)
+          if ($files.Count -ne 1 -or $files[0].Extension -ne ".exe") {
+            throw "Single-file publish expected exactly one EXE, got $($files.Count) files"
+          }
+          Write-Host "Single EXE size: $($files[0].Length) bytes"
           Get-ChildItem "${{ github.workspace }}\artifacts\WinUIBatchPacker-win-x64" |
             Select-Object Name, Length
 
