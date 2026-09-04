@@ -52,6 +52,7 @@ jobs:
           --self-contained true
           --no-restore
           -p:Platform=x64
+          -p:PublishSingleFile=true
           -p:ContinuousIntegrationBuild=true
           --output "${{ github.workspace }}\artifacts\WinUIBatchPacker-win-x64"
 
@@ -60,6 +61,11 @@ jobs:
           $exe = "${{ github.workspace }}\artifacts\WinUIBatchPacker-win-x64\WinUIBatchPacker.exe"
           if (-not (Test-Path -LiteralPath $exe)) {
             throw "Expected executable was not generated: $exe"
+          }
+          $otherFiles = @(Get-ChildItem "${{ github.workspace }}\artifacts\WinUIBatchPacker-win-x64" -File |
+            Where-Object Name -ne 'WinUIBatchPacker.exe')
+          if ($otherFiles.Count -ne 0) {
+            throw "Single-file publish unexpectedly produced extra files: $($otherFiles.Name -join ', ')"
           }
           Get-ChildItem "${{ github.workspace }}\artifacts\WinUIBatchPacker-win-x64" |
             Select-Object Name, Length

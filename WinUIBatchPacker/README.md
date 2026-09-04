@@ -17,7 +17,11 @@ dotnet restore
 dotnet build -c Release -p:Platform=x64
 ```
 
-Windows App SDK 采用 self-contained 非打包部署，Release 输出目录可直接分发。
+Windows App SDK 采用 self-contained、非打包、单文件部署。构建产物只有一个
+`WinUIBatchPacker.exe`；首次启动时会自动把原生依赖释放到系统临时目录。
+
+项目仅引用 WinUI 与 Runtime 组件，不引用 Windows App SDK 聚合包，因此不会携带本工具
+用不到的 AI、ML、ONNX、DirectML 和 Widgets 组件。
 
 ## GitHub Actions 自动构建
 
