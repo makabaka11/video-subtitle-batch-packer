@@ -7,9 +7,11 @@ public sealed class MediaRow : INotifyPropertyChanged
 {
     private bool _isSelected = true;
     private string _number = "";
-    public required string DisplayName { get; init; }
-    public required IReadOnlyList<string> Paths { get; init; }
-    public string Episode { get; init; } = "";
+    // WinUI's generated XAML type metadata constructs models through a default
+    // constructor and property setters, so these cannot be required/init-only.
+    public string DisplayName { get; set; } = "";
+    public IReadOnlyList<string> Paths { get; set; } = Array.Empty<string>();
+    public string Episode { get; set; } = "";
     public bool IsSelected { get => _isSelected; set { if (_isSelected != value) { _isSelected = value; Changed(); } } }
     public string Number { get => _number; set { if (_number != value) { _number = value; Changed(); } } }
     public event PropertyChangedEventHandler? PropertyChanged;
