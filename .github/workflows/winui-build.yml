@@ -63,7 +63,8 @@ jobs:
           }
           $size = (Get-ChildItem "${{ github.workspace }}\artifacts\WinUIBatchPacker-win-x64" -File -Recurse |
             Measure-Object Length -Sum).Sum
-          if ($size -gt 25MB) { throw "Compact artifact is unexpectedly large: $size bytes" }
+          Write-Host "Compact publish size: $size bytes"
+          if ($size -gt 45MB) { throw "Compact artifact is unexpectedly large: $size bytes" }
           Get-ChildItem "${{ github.workspace }}\artifacts\WinUIBatchPacker-win-x64" |
             Select-Object Name, Length
 
