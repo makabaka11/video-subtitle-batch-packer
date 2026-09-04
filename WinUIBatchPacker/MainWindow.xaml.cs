@@ -70,8 +70,7 @@ public sealed partial class MainWindow : Window
     private void UpdateMatchInfo()
     {
         var videos = VideoList.SelectedRows().Count; var subtitles = SubtitleList.SelectedRows().Count; var matched = videos > 0 && videos == subtitles;
-        MatchInfo.Severity = matched ? InfoBarSeverity.Success : InfoBarSeverity.Warning;
-        MatchInfo.Message = matched ? $"当前将按序号处理 {videos} 对" : $"已选视频 {videos} 个，字幕组 {subtitles} 个；数量必须相等";
+        MatchInfo.Text = matched ? $"✓ 当前将按序号处理 {videos} 对" : $"已选视频 {videos} 个，字幕组 {subtitles} 个；数量必须相等";
     }
     private async void StartPack_Click(object sender, RoutedEventArgs e)
     {

@@ -22,14 +22,14 @@
             <CheckBox x:Name="DefaultSubtitleCheck" Content="将新增的第一条字幕设为默认轨道"/>
           </StackPanel></Border>
           <Border Background="White" BorderBrush="#E1E5EA" BorderThickness="1" CornerRadius="12" Padding="18"><StackPanel Spacing="10">
-            <Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock Text="执行日志" FontSize="18" FontWeight="SemiBold"/><Button Grid.Column="1" Content="清空" Click="ClearLog_Click"/></Grid><ProgressBar x:Name="Progress" Minimum="0" Maximum="1" Height="4"/><TextBox x:Name="LogBox" Height="190" AcceptsReturn="True" IsReadOnly="True" TextWrapping="Wrap" FontFamily="Consolas" ScrollViewer.VerticalScrollBarVisibility="Auto"/><Button Content="开始批量封装" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Padding="18,10" Style="{StaticResource AccentButtonStyle}" Click="StartPack_Click"/>
+            <Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock Text="执行日志" FontSize="18" FontWeight="SemiBold"/><Button Grid.Column="1" Content="清空" Click="ClearLog_Click"/></Grid><ProgressBar x:Name="Progress" Minimum="0" Maximum="1" Height="4"/><TextBox x:Name="LogBox" Height="190" AcceptsReturn="True" IsReadOnly="True" TextWrapping="Wrap" FontFamily="Consolas" ScrollViewer.VerticalScrollBarVisibility="Auto"/><Button Content="开始批量封装" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Padding="18,10" Click="StartPack_Click"/>
           </StackPanel></Border>
         </StackPanel>
       </ScrollViewer>
       <Grid Grid.Column="1" RowSpacing="12"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
         <StackPanel><TextBlock Text="匹配方案" FontSize="24" FontWeight="SemiBold"/><TextBlock Text="勾选后的序号一一对应；拖动条目可调整顺序" Opacity="0.62" Margin="0,4,0,0"/></StackPanel>
         <Grid x:Name="ListsHost" Grid.Row="1" ColumnSpacing="12"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions></Grid>
-        <InfoBar x:Name="MatchInfo" Grid.Row="2" IsOpen="True" IsClosable="False" Severity="Informational" Message="请选择输入路径"/>
+        <Border Grid.Row="2" Background="#E8F1FB" BorderBrush="#B8D6F2" BorderThickness="1" CornerRadius="8" Padding="12"><TextBlock x:Name="MatchInfo" Text="请选择输入路径" TextWrapping="Wrap"/></Border>
       </Grid>
     </Grid>
   </Grid>
