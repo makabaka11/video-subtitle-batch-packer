@@ -1,0 +1,9 @@
+运行本工具前只需安装一次：
+
+1. Microsoft Windows App Runtime 1.8 (x64)
+   https://learn.microsoft.com/windows/apps/windows-app-sdk/downloads
+
+2. Microsoft .NET 8 Desktop Runtime (x64)
+   https://dotnet.microsoft.com/download/dotnet/8.0
+
+安装后，后续版本只需替换本目录中的应用文件，无需重复安装运行时。
