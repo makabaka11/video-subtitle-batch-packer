@@ -3,7 +3,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="using:WinUIBatchPacker" Title="视频字幕批量封装工具（WinUI）">
-  <Grid Padding="14" ColumnSpacing="12">
+  <Grid Margin="14" ColumnSpacing="12">
     <Grid.ColumnDefinitions><ColumnDefinition Width="760"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
     <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
       <StackPanel Spacing="10">
@@ -24,13 +24,13 @@
           <TextBox x:Name="OutputFolderBox" Header="输出文件夹"/><Button Grid.Column="1" Content="浏览" Margin="0,25,0,0" Click="PickOutputFolder_Click"/>
         </Grid>
         <Grid ColumnSpacing="8"><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
-          <ComboBox x:Name="EncodingBox" Header="字幕编码" SelectedIndex="0"><x:String>UTF-8</x:String><x:String>gbk</x:String><x:String>cp936</x:String><x:String>gb2312</x:String><x:String>big5</x:String></ComboBox>
-          <ComboBox x:Name="LanguageBox" Grid.Column="1" Header="未知后缀语言" SelectedIndex="0"><x:String>简体中文</x:String><x:String>繁体中文</x:String><x:String>英语</x:String></ComboBox>
+          <ComboBox x:Name="EncodingBox" Header="字幕编码" SelectedIndex="0"><ComboBoxItem Content="UTF-8"/><ComboBoxItem Content="gbk"/><ComboBoxItem Content="cp936"/><ComboBoxItem Content="gb2312"/><ComboBoxItem Content="big5"/></ComboBox>
+          <ComboBox x:Name="LanguageBox" Grid.Column="1" Header="未知后缀语言" SelectedIndex="0"><ComboBoxItem Content="简体中文"/><ComboBoxItem Content="繁体中文"/><ComboBoxItem Content="英语"/></ComboBox>
         </Grid>
         <CheckBox x:Name="DefaultSubtitleCheck" Content="把新增的第一条字幕设为默认"/>
         <StackPanel Orientation="Horizontal" Spacing="8"><Button Content="开始批量封装" Click="StartPack_Click"/><Button Content="清空日志" Click="ClearLog_Click"/></StackPanel>
         <ProgressBar x:Name="Progress" Minimum="0" Maximum="1"/>
-        <TextBox x:Name="LogBox" Header="执行日志" Height="240" AcceptsReturn="True" IsReadOnly="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"/>
+        <TextBox x:Name="LogBox" Header="执行日志" Height="240" AcceptsReturn="True" IsReadOnly="True" TextWrapping="Wrap" ScrollViewer.VerticalScrollBarVisibility="Auto"/>
       </StackPanel>
     </ScrollViewer>
     <Grid Grid.Column="1" ColumnSpacing="10"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>

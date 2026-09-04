@@ -67,7 +67,9 @@ public sealed partial class MainWindow : Window
         var replace = ReplaceCheck.IsChecked == true; var output = OutputFolderBox.Text.Trim();
         if (!replace && output.Length == 0) { AppendLog("错误：请选择输出文件夹。"); return; }
         if (!replace) Directory.CreateDirectory(output);
-        var options = new PackOptions(FfmpegBox.Text.Trim(), EncodingBox.SelectedItem?.ToString() ?? "UTF-8", LanguageBox.SelectedItem?.ToString() ?? "简体中文", DefaultSubtitleCheck.IsChecked == true, replace, output);
+        var encoding = (EncodingBox.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "UTF-8";
+        var language = (LanguageBox.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "简体中文";
+        var options = new PackOptions(FfmpegBox.Text.Trim(), encoding, language, DefaultSubtitleCheck.IsChecked == true, replace, output);
         Progress.Maximum = videos.Count; Progress.Value = 0; AppendLog($"开始处理 {videos.Count} 对。");
         for (var i = 0; i < videos.Count; i++)
         {
